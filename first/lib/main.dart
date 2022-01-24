@@ -1,108 +1,159 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_complete_guide/result.dart';
+//import 'package:flutter_complete_guide/result.dart';
 import 'package:flutter/widgets.dart';
-import './result.dart';
-import './quiz.dart';
-
-// void main() {
-//   runApp(MyApp());
-// }
+//import 'models/transaction.dart';
+import 'package:intl/intl.dart';
+import './widgets/transaction_list.dart';
+import './models/transaction.dart';
+// import 'package:flutter_complete_guide/widgets/transaction_list.dart';
+import './widgets/new_transaction.dart';
+import './widgets/chart.dart';
 
 void main() => runApp(MyApp());
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   @override
-  State<StatefulWidget> createState() {
-    // TODO: implement createState
-    return _MyAppState();
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Transactions App',
+      theme: ThemeData(
+        appBarTheme: AppBarTheme(
+          textTheme: ThemeData.light().textTheme.copyWith(
+              title: TextStyle(fontFamily: 'RobotoSlab', fontSize: 18)),
+        ),
+        primarySwatch: Colors.indigo,
+        accentColor: Colors.pink,
+        fontFamily: 'RobotoSlab',
+        //appBarTheme:
+      ),
+      home: MyHomePage(),
+    );
   }
 }
 
-class _MyAppState extends State<MyApp> {
-  static const _questions = const [
-    {
-      'questionText': 'What\'s the capital of India?',
-      'answers': [
-        {'text': 'New Delhi', 'score': 10},
-        {'text': 'Mumbai', 'score': 4},
-        {'text': 'Chennai', 'score': 7},
-        {'text': 'Kolkata', 'score': 3}
-      ],
-    },
-    {
-      'questionText': 'Which is the largest creature?',
-      'answers': [
-        {'text': 'Blue Whale', 'score': 10},
-        {'text': 'Mammoth', 'score': 10},
-        {'text': 'Dolphin', 'score': 10},
-        {'text': 'T-Rex', 'score': 10}
-      ],
-    },
-    {
-      'questionText': 'Chennai gets its name from?',
-      'answers': [
-        {'text': 'Madras', 'score': 10},
-        {'text': 'Chennapattinam', 'score': 15},
-        {'text': 'Madrasapattinam', 'score': 5},
-        {'text': 'Madhraas', 'score': 3}
-      ],
-    },
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final List<Transaction> transactions = [];
+  // Transaction(
+  //   id: 't1',
+  //   title: 'Shoes',
+  //   amount: 23.65,
+  //   date: DateTime.now(),
+  // ),
+  // Transaction(
+  //   id: 't2',
+  //   title: 'Groceries',
+  //   amount: 43.65,
+  //   date: DateTime.now(),
+  // ),
+
+  // final titleController = TextEditingController();
+  // final amountController = TextEditingController();
+
+  final List<Transaction> _userTransactions = [
+    // Transaction(
+    //   id: 't1',
+    //   title: 'Shoes',
+    //   amount: 23.65,
+    //   date: DateTime.now(),
+    // ),
+    // Transaction(
+    //   id: 't2',
+    //   title: 'Groceries',
+    //   amount: 43.65,
+    //   date: DateTime.now(),
+    // ),
   ];
 
-  var _questionIndex = 0;
-  var _totalScore = 0;
-  void _resetquiz() {
-    setState(() {});
-    _questionIndex = 0;
-    _totalScore = 0;
+  List<Transaction> get _recentTransactions {
+    return _userTransactions.where((trans) {
+      return trans.date.isAfter(
+        DateTime.now().subtract(
+          Duration(days: 7),
+        ),
+      );
+    }).toList();
   }
 
-  void _answerQuestion(int score) {
-    _totalScore += score;
+  void _addNewTransactions(
+      String transacTitle, double transacAmount, DateTime chosenDate) {
+    final newTransac = Transaction(
+      title: transacTitle,
+      amount: transacAmount,
+      date: chosenDate,
+      id: DateTime.now().toString(),
+    );
+
     setState(() {
-      _questionIndex = _questionIndex + 1;
+      _userTransactions.add(newTransac);
     });
-    print(_questionIndex);
-    if (_questionIndex < _questions.length) {
-      print("We have more questions");
-    }
+  }
+
+  void _startAddNewTransaction(BuildContext ctx) {
+    showModalBottomSheet(
+        context: ctx,
+        builder: (bctx) {
+          return GestureDetector(
+            onTap: () {},
+            child: NewTransaction(_addNewTransactions),
+            behavior: HitTestBehavior.opaque,
+          );
+        });
+  }
+
+  void _deleteTransaction(String id) {
+    setState(() {
+      _userTransactions.removeWhere((trans) {
+        return trans.id == id;
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    // const questions = const [
-    //   {
-    //     'questionText': 'What\'s the capital of India?',
-    //     'answers': ['New Delhi', 'Mumbai', 'Chennai', 'Kolkata'],
-    //   },
-    //   {
-    //     'questionText': 'Which is the largest creature?',
-    //     'answers': ['Blue Whale', 'Mammoth', 'Elephant', 'Dinosaur'],
-    //   },
-    //   {
-    //     'questionText': 'Chennai gets its name from?',
-    //     'answers': ['Madras', 'Chennapattinam', 'Madrasapattinam', 'Madhraas'],
-    //   },
-    // ];
-
-    // var dummy = const ['Hello'];
-    // dummy.add('Max');
-    // print(dummy);
-    // dummy = [];
-    // questions = []; // does not work if questions is a const
-
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Quiz App'),
+    return Scaffold(
+      appBar: AppBar(
+        title:
+            Text('Transaction App', style: TextStyle(fontFamily: 'RobotoSlab')),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () => _startAddNewTransaction(context),
+          ),
+        ],
+        //alignment: TextAlign.center,
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Chart(_recentTransactions),
+            // Container(
+            //   width: double.infinity,
+            //   child: Card(
+            //     color: Colors.teal.shade200,
+            //     child: Container(
+            //       width: double.infinity,
+            //       child: Text('Chart'),
+            //     ),
+            //     elevation: 5,
+            //   ),
+            // ),
+            //UserTransactions(),
+            // NewTransaction(),
+            TransactionList(_userTransactions, _deleteTransaction),
+          ],
         ),
-        body: _questionIndex < _questions.length
-            ? Quiz(
-                answerQuestion: _answerQuestion,
-                questionIndex: _questionIndex,
-                questions: _questions,
-              )
-            : Result(_totalScore,_resetquiz),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: () => _startAddNewTransaction(context),
       ),
     );
   }
