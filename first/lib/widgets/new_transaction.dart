@@ -79,7 +79,7 @@ class _NewTransactionState extends State<NewTransaction> {
                 Expanded(
                   child: Text(_selectedDate == null
                       ? 'No Date Chosen'
-                      :  'Picked Date : ${DateFormat.yMEd().format(_selectedDate)}'
+                      :  'Chosen Date : ${DateFormat.yMEd().format(_selectedDate)}'
                   ),
                 ),
                 FlatButton(
